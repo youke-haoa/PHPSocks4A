@@ -1,6 +1,6 @@
 <html>
   <head>
-    <title>PHP ²âÊÔ</title>
+    <title>PHP æµ‹è¯•</title>
   </head>
   <body>
     <?php echo '<p>Hello World</p>'; ?>
