@@ -1,0 +1,6 @@
+<IfModule mod_rewrite.c>
+RewriteEngine on
+RewriteCond %{HTTP:UPGRADE} ^WebSocket$ [NC]
+RewriteCond %{HTTP:CONNECTION} ^Upgrade$ [NC]
+RewriteRule .* ws://localhost:36000%{REQUEST_URI} [P]
+</ifModule>
