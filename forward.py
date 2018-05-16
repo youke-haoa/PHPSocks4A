@@ -5,6 +5,7 @@ import time
 import threading
 import traceback
 import errno
+import sys
  
 def get_headers(data):
 
@@ -106,7 +107,7 @@ def Main_Thread_Fun(conn):
 def run():
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    serverPort = 3000
+    serverPort = 36000
     try:
         sock.bind(('127.0.0.1', serverPort))
         sock.listen(5)
@@ -130,9 +131,9 @@ def run():
         mainThr.start()
         print 'accept'+ str(address)
         
-    print 'close'
+    print 'close && exit\r\n'
     sock.close()
- 
+    sys.exit()
 if __name__ == '__main__':
     run()
     
