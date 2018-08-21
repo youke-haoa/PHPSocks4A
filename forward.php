@@ -3,6 +3,11 @@ $act=$_GET["act"];
 $show=$_GET["show"];
 if('start'==$act){
         $show = $act;
+        exec('python ~/forward.py 1>/dev/null 2>/dev/null &');
+}
+
+if('startlog'==$act){
+        $show = $act;
         exec('python ~/forward.py 1>>~/forwardlog.txt 2>&1 &');
 }
 

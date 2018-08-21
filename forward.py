@@ -53,13 +53,24 @@ def Main_Thread_Fun(conn):
         return
     headers = get_headers(data)
     response_tpl = "HTTP/1.1 101 Switching Protocols\r\n" \
-                   "Upgrade:websocket\r\n" \
-                   "Connection:Upgrade\r\n" \
+                   "Upgrade: websocket\r\n" \
+                   "Connection: Upgrade\r\n" \
                    "Sec-WebSocket-Accept: HSmrc0sMlYUkAGmm5OPpG2HaGWk=\r\n" \
-                   "WebSocket-Location:ws://%s%s\r\n\r\n"
+                   "\r\n"
+                   #"Sec-WebSocket-Protocol: chat\r\n" \
+                   #"WebSocket-Location: ws://%s%s\r\n"
  
-    response_str = response_tpl % (headers['Host'], headers['url'])
-    
+    #response_str = response_tpl % (headers['Host'], headers['url'])
+    response_str = response_tpl
+    if '1' == headers['JustTest']:
+        conn.send(bytes(response_str))
+        conn.shutdown(socket.SHUT_RDWR)
+        conn.close()
+        print  'conn.close()'
+        conn = None
+        print 'return'
+        return
+    print 'connect'
     forwardHost = headers['ForwardHost']
     forwardPort = headers['ForwardPort']
     forward_EP = (forwardHost,int(forwardPort))
