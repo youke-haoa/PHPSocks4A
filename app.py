@@ -14,27 +14,18 @@ def run():
     try:
         sock.bind(('127.0.0.1', serverPort))
         sock.listen(5)
-        print 'listen '+str(sock.getsockname())
     except Exception as e:
-        print str(e)
-        print errno.errorcode[e.errno]
-        print 'format_exc():\r\n',traceback.format_exc()
         return
         
     while True:
         try:
             conn, address = sock.accept()
         except KeyboardInterrupt:
-            print  'Input KeyboardInterrupt'
             break;
         except:
-            print 'format_exc():\r\n',traceback.format_exc()
             continue
         #mainThr = threading.Thread(target=Main_Thread_Fun,args=(conn,))
         #mainThr.start()
-        print 'accept'+ str(address)
-        
-    print 'close && exit\r\n'
     sock.close()
     sys.exit()
 if __name__ == '__main__':
