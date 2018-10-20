@@ -28,19 +28,19 @@ def Thread_RemoteRecv_Fun(conn,remoteSock):
         try:
             data = remoteSock.recv(8192)
             if not data:
-                print 'remoteSock:' + str(remoteSock)+' recv 0 will Close.'
+                print ('remoteSock:' + str(remoteSock)+' recv 0 will Close.')
                 break
             conn.send(data)
         except Exception as e:
-            print str(e)
-            print errno.errorcode[e.errno]
-            print 'format_exc():\r\n',traceback.format_exc()
+            print (str(e))
+            print (errno.errorcode[e.errno])
+            print ('format_exc():\r\n',traceback.format_exc())
             break
     remoteSock.close()
-    print  'remoteSock.close()'
+    print  ('remoteSock.close()')
     remoteSock = None
     conn.close()
-    print  'conn.close()'
+    print  ('conn.close()')
     conn = None
     return
     
@@ -48,7 +48,7 @@ def Main_Thread_Fun(conn):
     try:
         data = conn.recv(1024)
     except:
-        print 'format_exc():\r\n',traceback.format_exc()
+        print ('format_exc():\r\n',traceback.format_exc())
         conn.close()
         return
     headers = get_headers(data)
@@ -66,11 +66,11 @@ def Main_Thread_Fun(conn):
         conn.send(bytes(response_str))
         conn.shutdown(socket.SHUT_RDWR)
         conn.close()
-        print  'conn.close()'
+        print  ('conn.close()')
         conn = None
-        print 'return'
+        print ('return')
         return
-    print 'connect'
+    print ('connect')
     forwardHost = headers['ForwardHost']
     forwardPort = headers['ForwardPort']
     forward_EP = (forwardHost,int(forwardPort))
@@ -78,13 +78,13 @@ def Main_Thread_Fun(conn):
     remoteSock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     remoteSock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     try:
-        print 'connect'+str(forward_EP)
+        print ('connect'+str(forward_EP))
         remoteSock.connect(forward_EP)
-        print 'remoteSock:' + str(remoteSock.getpeername())
+        print ('remoteSock:' + str(remoteSock.getpeername()))
     except Exception as e:
-        print str(e)
-        print errno.errorcode[e.errno]
-        print 'format_exc():\r\n',traceback.format_exc()
+        print (str(e))
+        print (errno.errorcode[e.errno])
+        print ('format_exc():\r\n',traceback.format_exc())
         remoteSock.close()
         conn.close()
         return
@@ -96,22 +96,22 @@ def Main_Thread_Fun(conn):
         try:
             data = conn.recv(8192)
             if not data:
-                print 'conn:' + str(conn)+' recv 0 will Close.'
+                print ('conn:' + str(conn)+' recv 0 will Close.')
                 break
             remoteSock.send(data)
         except Exception as e:
-            print str(e)
-            print errno.errorcode[e.errno]
-            print 'format_exc():\r\n',traceback.format_exc()
+            print (str(e))
+            print (errno.errorcode[e.errno])
+            print ('format_exc():\r\n',traceback.format_exc())
             break
 
     remoteSock.shutdown(socket.SHUT_RDWR)
     remoteSock.close()
-    print  'remoteSock.close()'
+    print  ('remoteSock.close()')
     remoteSock = None
     conn.shutdown(socket.SHUT_RDWR)
     conn.close()
-    print  'conn.close()'
+    print  ('conn.close()')
     conn = None
     return
  
@@ -122,27 +122,27 @@ def run():
     try:
         sock.bind(('127.0.0.1', serverPort))
         sock.listen(5)
-        print 'listen '+str(sock.getsockname())
+        print ('listen '+str(sock.getsockname()))
     except Exception as e:
-        print str(e)
-        print errno.errorcode[e.errno]
-        print 'format_exc():\r\n',traceback.format_exc()
+        print (str(e))
+        print (errno.errorcode[e.errno])
+        print ('format_exc():\r\n',traceback.format_exc())
         return
         
     while True:
         try:
             conn, address = sock.accept()
         except KeyboardInterrupt:
-            print  'Input KeyboardInterrupt'
+            print  ('Input KeyboardInterrupt')
             break;
         except:
-            print 'format_exc():\r\n',traceback.format_exc()
+            print ('format_exc():\r\n',traceback.format_exc())
             continue
         mainThr = threading.Thread(target=Main_Thread_Fun,args=(conn,))
         mainThr.start()
-        print 'accept'+ str(address)
+        print ('accept'+ str(address))
         
-    print 'close && exit\r\n'
+    print ('close && exit\r\n')
     sock.close()
     sys.exit()
 if __name__ == '__main__':
