@@ -6,6 +6,7 @@ import threading
 import traceback
 import errno
 import sys
+import base64
  
 def get_headers(data):
 
@@ -72,6 +73,9 @@ def Main_Thread_Fun(conn):
         return
     print ('connect')
     forwardHost = headers['ForwardHost']
+    if '1' == headers['Base64Host']:
+        forwardHost = base64.b64decode(forwardHost)
+        print ('base64 Host:'+forwardHost)
     forwardPort = headers['ForwardPort']
     forward_EP = (forwardHost,int(forwardPort))
     
