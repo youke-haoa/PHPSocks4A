@@ -25,11 +25,12 @@ def get_headers(data):
     return header_dict
 
 def Thread_RemoteRecv_Fun(conn,remoteSock,threadFlageKey): 
+    remoteSockName = str(remoteSock.getpeername())
     while True:
         try:
             data = remoteSock.recv(8192)
             if not data:
-                print (threadFlageKey + 'server remoteSock:' + str(remoteSock.getpeername())+' recv 0 will Close.')
+                print (threadFlageKey + 'server remoteSock:' + remoteSockName +' recv 0 will Close.')
                 break
             conn.send(data)
         except Exception as e:
@@ -41,7 +42,7 @@ def Thread_RemoteRecv_Fun(conn,remoteSock,threadFlageKey):
     print  (threadFlageKey + 'server remoteSock.close()')
     remoteSock = None
     conn.close()
-    print  (threadFlageKey + 'server conn.close()')
+    print  (threadFlageKey + 'client conn.close()')
     conn = None
     return
 
