@@ -24,27 +24,28 @@ def get_headers(data):
             header_dict[k] = v.strip()
     return header_dict
 
-def Thread_RemoteRecv_Fun(conn,remoteSock): 
+def Thread_RemoteRecv_Fun(conn,remoteSock,threadFlageKey): 
     while True:
         try:
             data = remoteSock.recv(8192)
             if not data:
-                print ('remoteSock:' + str(remoteSock)+' recv 0 will Close.')
+                print (threadFlageKey + 'server remoteSock:' + str(remoteSock.getpeername())+' recv 0 will Close.')
                 break
             conn.send(data)
         except Exception as e:
-            print (str(e))
-            print (errno.errorcode[e.errno])
-            print ('format_exc():\r\n',traceback.format_exc())
+            print (threadFlageKey + str(e))
+            print (threadFlageKey + errno.errorcode[e.errno])
+            print (threadFlageKey + 'format_exc():\r\n',traceback.format_exc())
             break
     remoteSock.close()
-    print  ('remoteSock.close()')
+    print  (threadFlageKey + 'server remoteSock.close()')
     remoteSock = None
     conn.close()
-    print  ('conn.close()')
+    print  (threadFlageKey + 'server conn.close()')
     conn = None
     return
-    
+
+#主线程(conn 客户端连接后拿到的Socket)
 def Main_Thread_Fun(conn):
     try:
         data = conn.recv(1024)
@@ -71,51 +72,53 @@ def Main_Thread_Fun(conn):
         conn = None
         print ('return')
         return
-    print ('connect')
+    
     forwardHost = headers['ForwardHost']
     if '1' == headers['Base64Host']:
         forwardHost = base64.b64decode(forwardHost)
         print ('base64 Host:'+forwardHost)
+    print ('connect:'+forwardHost)
+    
     forwardPort = headers['ForwardPort']
     forward_EP = (forwardHost,int(forwardPort))
     
     remoteSock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     remoteSock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     try:
-        print ('connect'+str(forward_EP))
         remoteSock.connect(forward_EP)
-        print ('remoteSock:' + str(remoteSock.getpeername()))
+        threadFlageKey = str(remoteSock.getpeername())+' -> ';
+        print (threadFlageKey + 'remoteSock.connect:' + str(remoteSock.getpeername()))
     except Exception as e:
-        print (str(e))
-        print (errno.errorcode[e.errno])
-        print ('format_exc():\r\n',traceback.format_exc())
+        print (threadFlageKey + str(e))
+        print (threadFlageKey + errno.errorcode[e.errno])
+        print (threadFlageKey + 'format_exc():\r\n',traceback.format_exc())
         remoteSock.close()
         conn.close()
         return
     conn.send(bytes(response_str))
-    remote_thr = threading.Thread(target=Thread_RemoteRecv_Fun,args=(conn,remoteSock,))
+    remote_thr = threading.Thread(target=Thread_RemoteRecv_Fun,args=(conn,remoteSock,threadFlageKey,))
     remote_thr.daemon = True
     remote_thr.start()
     while True:
         try:
             data = conn.recv(8192)
             if not data:
-                print ('conn:' + str(conn)+' recv 0 will Close.')
+                print (threadFlageKey + 'client conn:' + str(conn.getpeername())+' recv 0 will Close.')
                 break
             remoteSock.send(data)
         except Exception as e:
-            print (str(e))
-            print (errno.errorcode[e.errno])
-            print ('format_exc():\r\n',traceback.format_exc())
+            print (threadFlageKey + str(e))
+            print (threadFlageKey + errno.errorcode[e.errno])
+            print (threadFlageKey + 'format_exc():\r\n',traceback.format_exc())
             break
 
     remoteSock.shutdown(socket.SHUT_RDWR)
     remoteSock.close()
-    print  ('remoteSock.close()')
+    print  (threadFlageKey + 'server remoteSock.shutdown() remoteSock.close()')
     remoteSock = None
     conn.shutdown(socket.SHUT_RDWR)
     conn.close()
-    print  ('conn.close()')
+    print  (threadFlageKey + 'client conn.shutdown() conn.close()')
     conn = None
     return
  
