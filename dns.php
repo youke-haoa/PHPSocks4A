@@ -7,8 +7,8 @@ if('1'==$useBase64){
 
 $iparr = dns_get_record($domain,DNS_A);
 $info=array(
-        domain=>$domain,
-        dns=>$iparr,
+        "domain"=>$domain,
+        "dns"=>$iparr,
 );
 echo json_encode($info);
 ?>
