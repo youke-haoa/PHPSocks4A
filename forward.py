@@ -147,6 +147,8 @@ def Thread_RecvFromServer_V2(conn,socketInfo):
     return        
 
 def Thread_SendMsgToClient_V2(conn,socketNODict):
+    lastSendTime = time.time()
+    #print "lastTime:" + str(lastSendTime)
     while True:
         isHasMsg = False
         keys = socketNODict.keys()
@@ -187,6 +189,8 @@ def Thread_SendMsgToClient_V2(conn,socketNODict):
                         try:
                             isHasMsg = True
                             conn.send(otherData)
+                            lastSendTime = time.time()
+                            #print "conn.send lastTime:" + str(lastSendTime)
                             #print("发送消息 send to Client: " + str(len(otherData))+"B\r\n")
                         except Exception as e:
                             print("send Msg Exception\r\n")
@@ -196,7 +200,16 @@ def Thread_SendMsgToClient_V2(conn,socketNODict):
                             return
 
         if not isHasMsg:
-           time.sleep(0.001)
+            if 3 < (time.time() - lastSendTime):
+                heartbeatMsg = QueueMsg()
+                heartbeatMsg.SocketNO = 0
+                heartbeatMsg.CMD = 3
+                heartbeatMsg.MsgLength = 3
+                heartbeatData = heartbeatMsg.ConvertToBytes()
+                conn.send(heartbeatData)
+                lastSendTime = time.time()
+                #print "heartbeatData lastTime:" + str(lastSendTime)
+            time.sleep(0.001)
     return
 
 def Thread_CreateConnect_V2(msg,SocketNODict):#创建连接单独开一个线程,不然会阻塞其他请求
