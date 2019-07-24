@@ -204,9 +204,7 @@ def Thread_SendMsgToClient_V2(conn,socketNODict):
 
         if not isHasMsg:
             if 3 < (time.time() - lastSendTime):
-                tttime = time.time()
-                print "time "+str(tttime) + "tttime" + str(int(tttime * 1000))+"  "+ str(int(tttime * 1000) & 0xffff)
-                heartbeatMsg.MsgData = Common.Int162Bytes(int(tttime * 1000) & 0xffff)
+                heartbeatMsg.MsgData = Common.Int162Bytes(int(time.time() * 1000) & 0xffff)
                 heartbeatMsg.MsgLength = 3 + len(heartbeatMsg.MsgData)
                 heartbeatData = heartbeatMsg.ConvertToBytes()
                 conn.send(heartbeatData)
