@@ -148,6 +148,9 @@ def Thread_RecvFromServer_V2(conn,socketInfo):
 
 def Thread_SendMsgToClient_V2(conn,socketNODict):
     lastSendTime = time.time()
+    heartbeatMsg = QueueMsg()
+    heartbeatMsg.SocketNO = 0
+    heartbeatMsg.CMD = 3
     #print "lastTime:" + str(lastSendTime)
     while True:
         isHasMsg = False
@@ -201,10 +204,10 @@ def Thread_SendMsgToClient_V2(conn,socketNODict):
 
         if not isHasMsg:
             if 3 < (time.time() - lastSendTime):
-                heartbeatMsg = QueueMsg()
-                heartbeatMsg.SocketNO = 0
-                heartbeatMsg.CMD = 3
-                heartbeatMsg.MsgLength = 3
+                tttime = time.time()
+                print "time "+str(tttime) + "tttime" + str(int(tttime * 1000))+"  "+ str(int(tttime * 1000) & 0xffff)
+                heartbeatMsg.MsgData = Common.Int162Bytes(int(tttime * 1000) & 0xffff)
+                heartbeatMsg.MsgLength = 3 + len(heartbeatMsg.MsgData)
                 heartbeatData = heartbeatMsg.ConvertToBytes()
                 conn.send(heartbeatData)
                 lastSendTime = time.time()
