@@ -309,7 +309,7 @@ def Main_Thread_Fun(conn):
         cacheData = cacheData[useLen:]
 
         for msg in msgArr:
-            print('recv from Client,SocketNO '+str(msg.SocketNO)+',CMD '+str(msg.CMD)+'\r\n')
+            #print('recv from Client,SocketNO '+str(msg.SocketNO)+',CMD '+str(msg.CMD)+'\r\n')
             if not msg:
                 continue
             if 0 == msg.CMD:    #创建连接
