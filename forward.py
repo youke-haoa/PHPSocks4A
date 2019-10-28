@@ -147,7 +147,7 @@ def Thread_RecvFromServer_V2(conn,socketInfo):
     return        
 
 def Thread_SendMsgToClient_V2(conn,socketNODict):
-    lastSendTime = time.time()
+    #lastSendTime = time.time()
     heartbeatMsg = QueueMsg()
     heartbeatMsg.SocketNO = 0
     heartbeatMsg.CMD = 3
@@ -192,7 +192,7 @@ def Thread_SendMsgToClient_V2(conn,socketNODict):
                         try:
                             isHasMsg = True
                             conn.send(otherData)
-                            lastSendTime = time.time()
+                            #lastSendTime = time.time()
                             #print "conn.send lastTime:" + str(lastSendTime)
                             #print("发送消息 send to Client: " + str(len(otherData))+"B\r\n")
                         except Exception as e:
@@ -203,12 +203,12 @@ def Thread_SendMsgToClient_V2(conn,socketNODict):
                             return
 
         if not isHasMsg:
-            if 3 < (time.time() - lastSendTime):
-                heartbeatMsg.MsgData = Common.Int162Bytes(int(time.time() * 1000) & 0xffff)
-                heartbeatMsg.MsgLength = 3 + len(heartbeatMsg.MsgData)
-                heartbeatData = heartbeatMsg.ConvertToBytes()
-                conn.send(heartbeatData)
-                lastSendTime = time.time()
+            #if 3 < (time.time() - lastSendTime):
+                #heartbeatMsg.MsgData = Common.Int162Bytes(int(time.time() * 1000) & 0xffff)
+                #heartbeatMsg.MsgLength = 3 + len(heartbeatMsg.MsgData)
+                #heartbeatData = heartbeatMsg.ConvertToBytes()
+                #conn.send(heartbeatData)
+                #lastSendTime = time.time()
                 #print "heartbeatData lastTime:" + str(lastSendTime)
             time.sleep(0.001)
     return
@@ -341,6 +341,7 @@ def Main_Thread_Fun(conn):
 
 
             elif 3 == msg.CMD:  #心跳包
+                conn.send(msg.ConvertToBytes())
                 pass
             elif 4 == msg.CMD:  #无用的消息
                 pass
