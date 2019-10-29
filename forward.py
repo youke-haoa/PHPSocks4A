@@ -1,6 +1,5 @@
 ﻿#!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 import socket
 import time
 import threading
@@ -10,7 +9,34 @@ import sys
 import base64
 import Queue
 import md5
- 
+
+from base64 import b64encode,b64decode
+from Cryptodome.Cipher import AES
+from Cryptodome.Random import get_random_bytes
+from Cryptodome.Util.Padding import pad, unpad
+
+AESKEY = b64decode('0DmXgzLM9lg16En6r8Mfng==')
+
+def AESDecrypt(ciphertext):
+    iv = bytearray(ciphertext[:AES.block_size])
+    ct_bytes = bytearray(ciphertext[AES.block_size:])
+    
+    cipher = AES.new(AESKEY, AES.MODE_CBC, iv)
+    plaintext = unpad(cipher.decrypt(ct_bytes), AES.block_size)
+
+    return plaintext
+
+def AESEncryptor(plaintext):
+    cipher = AES.new(AESKEY, AES.MODE_CBC)
+    ct_bytes = cipher.encrypt(pad(plaintext, AES.block_size))
+    iv = cipher.iv
+
+    result = []
+    result.extend(cipher.iv)
+    result.extend(ct_bytes)
+
+    return result
+
 class QueueMsg():
     def __init__(self):        
         self.MsgLength = None
@@ -19,6 +45,20 @@ class QueueMsg():
         self.MsgData = bytearray()
 
     def ConvertToBytes(self):
+        if(5==self.CMD):
+            return self.ConvertToBytesBase()
+        plaintext = self.ConvertToBytesBase()
+        ciphertext = bytearray(AESEncryptor(plaintext))
+        msg = QueueMsg()
+        
+        msg.SocketNO = 0
+        msg.CMD = 5
+        msg.MsgLength = 3+len(ciphertext)
+        msg.MsgData = ciphertext
+
+        return msg.ConvertToBytes()
+    
+    def ConvertToBytesBase(self):
         result = []
         result.extend(Common.Int162Bytes(self.MsgLength))
         result.extend(Common.Int162Bytes(self.SocketNO))
@@ -26,6 +66,7 @@ class QueueMsg():
         result.extend(self.MsgData)
 
         return bytearray(result)
+        
     @staticmethod
     def CreateQueueMsg(data):
         result = []
@@ -46,6 +87,12 @@ class QueueMsg():
                 msgDataLen = msgLen - 5
                 msg.MsgData = bytearray(data[currIndex:currIndex + msgDataLen])
                 currIndex += msgDataLen
+
+                if(5 == msg.CMD):#如果是AES包，解密
+                    plaintext = AESDecrypt(msg.MsgData)
+                    msgArr,useLen  = QueueMsg.CreateQueueMsg(plaintext)
+                    msg = msgArr[0]
+
                 result.append(msg)
                 useLen += msgLen
             else:
@@ -194,7 +241,8 @@ def Thread_SendMsgToClient_V2(conn,socketNODict):
                             conn.send(otherData)
                             #lastSendTime = time.time()
                             #print "conn.send lastTime:" + str(lastSendTime)
-                            #print("发送消息 send to Client: " + str(len(otherData))+"B\r\n")
+                            #print("发送消息 send to Client: " +
+                            #str(len(otherData))+"B\r\n")
                         except Exception as e:
                             print("send Msg Exception\r\n")
                             print('Thread_SendMsgToClient_V2 conn.send' + str(e))
@@ -204,7 +252,8 @@ def Thread_SendMsgToClient_V2(conn,socketNODict):
 
         if not isHasMsg:
             #if 3 < (time.time() - lastSendTime):
-                #heartbeatMsg.MsgData = Common.Int162Bytes(int(time.time() * 1000) & 0xffff)
+                #heartbeatMsg.MsgData = Common.Int162Bytes(int(time.time() *
+                #1000) & 0xffff)
                 #heartbeatMsg.MsgLength = 3 + len(heartbeatMsg.MsgData)
                 #heartbeatData = heartbeatMsg.ConvertToBytes()
                 #conn.send(heartbeatData)
@@ -220,14 +269,14 @@ def Thread_CreateConnect_V2(msg,SocketNODict):#创建连接单独开一个线程
     socketInfo.SocketNO = msg.SocketNO
     socketInfo.Sockt_Server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     socketInfo.Sockt_Server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    epStr =  ''.join(chr(x) for x in msg.MsgData)
+    epStr = ''.join(chr(x) for x in msg.MsgData)
     epArr = epStr.split(':')
     forward_EP = (epArr[0],int(epArr[1]))
-    print("0 == msg.CMD,Create Scoket"+str(forward_EP)+"\r\n")
+    print("0 == msg.CMD,Create Scoket" + str(forward_EP) + "\r\n")
 
     try:
         socketInfo.Sockt_Server.connect(forward_EP)
-        print('connected to Server'+str(forward_EP)+'\r\n')
+        print('connected to Server' + str(forward_EP) + '\r\n')
         threading.Thread(target=Thread_RecvFromServer_V2,args=(socketInfo.Sockt_Server,socketInfo)).start()
         print('create thread for Read Server Data\r\n')
         createMsg = QueueMsg()
@@ -258,7 +307,7 @@ def Main_Thread_Fun(conn):
     try:
         print('Main_Thread_Fun Hand clietn Data And Socket\r\n')
         data = conn.recv(1024)
-        print('recv from bytes: '+str(len(data))+'B\r\n')
+        print('recv from bytes: ' + str(len(data)) + 'B\r\n')
     except:
         print('format_exc():\r\n',traceback.format_exc())
         conn.close()
@@ -309,7 +358,8 @@ def Main_Thread_Fun(conn):
         cacheData = cacheData[useLen:]
 
         for msg in msgArr:
-            #print('recv from Client,SocketNO '+str(msg.SocketNO)+',CMD '+str(msg.CMD)+'\r\n')
+            #print('recv from Client,SocketNO '+str(msg.SocketNO)+',CMD
+            #'+str(msg.CMD)+'\r\n')
             if not msg:
                 continue
             if 0 == msg.CMD:    #创建连接
@@ -352,6 +402,13 @@ def Main_Thread_Fun(conn):
     return
  
 def run():
+    e = AESEncryptor('123')
+    
+    print b64encode(bytearray(e))
+
+    p = AESDecrypt(e)
+    print  p
+
     #print('CodePage:'+sys.getdefaultencoding()+'\r\n')
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
