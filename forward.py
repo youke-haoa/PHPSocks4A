@@ -90,7 +90,7 @@ class QueueMsg():
 
                 if(5 == msg.CMD):#如果是AES包，解密
                     plaintext = AESDecrypt(msg.MsgData)
-                    msgArr,useLen  = QueueMsg.CreateQueueMsg(plaintext)
+                    msgArr,useLenTmp  = QueueMsg.CreateQueueMsg(plaintext)
                     msg = msgArr[0]
 
                 result.append(msg)
