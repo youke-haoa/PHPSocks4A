@@ -15,7 +15,7 @@ from Cryptodome.Cipher import AES
 from Cryptodome.Random import get_random_bytes
 from Cryptodome.Util.Padding import pad, unpad
 
-AESKEY = b64decode('0DmXgzLM9lg16En6r8Mfng==')
+AESKEY = b64decode('CS9L5e5h8SJT9HHQNklqPg==')
 
 def AESDecrypt(ciphertext):
     iv = bytearray(ciphertext[:AES.block_size])
