@@ -15,7 +15,7 @@ from Cryptodome.Cipher import AES
 from Cryptodome.Random import get_random_bytes
 from Cryptodome.Util.Padding import pad, unpad
 
-AESKEY = b64decode('CS9L5e5h8SJT9HHQNklqPg==')
+AESKEY = b64decode('0DmXgzLM9lg16En6r8Mfng==')
 
 def AESDecrypt(ciphertext):
     iv = bytearray(ciphertext[:AES.block_size])
@@ -374,7 +374,7 @@ def Main_Thread_Fun(conn):
                 socketInfo.IsClose = True
                 if socketInfo:
                     #print("关闭连接"+str(msg.SocketNO)+"\r\n")
-                    #socketInfo.Sockt_Server.shutdown(socket.SHUT_RDWR)
+                    socketInfo.Sockt_Server.shutdown(socket.SHUT_RDWR)
                     socketInfo.Sockt_Server.close()
                     if SocketNODict.has_key(msg.SocketNO):
                         del SocketNODict[msg.SocketNO]
@@ -403,6 +403,8 @@ def Main_Thread_Fun(conn):
     return
  
 def run():
+    global AESKEY
+    AESKEY = AES.new(AESKEY, AES.MODE_CBC, AESKEY).encrypt(pad(AESKEY, AES.block_size))[:AES.block_size]
     e = AESEncryptor('123')
     
     print b64encode(bytearray(e))
