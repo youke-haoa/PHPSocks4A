@@ -374,7 +374,7 @@ def Main_Thread_Fun(conn):
                 socketInfo.IsClose = True
                 if socketInfo:
                     #print("关闭连接"+str(msg.SocketNO)+"\r\n")
-                    socketInfo.Sockt_Server.shutdown(socket.SHUT_RDWR)
+                    #socketInfo.Sockt_Server.shutdown(socket.SHUT_RDWR)
                     socketInfo.Sockt_Server.close()
                     if SocketNODict.has_key(msg.SocketNO):
                         del SocketNODict[msg.SocketNO]
