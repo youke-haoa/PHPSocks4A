@@ -130,7 +130,7 @@ def get_headers(data):
                 header_dict['method'], header_dict['url'], header_dict['protocol'] = header_list[i].split(' ')
         else:
             k, v = header_list[i].split(':', 1)
-            header_dict[k] = v.strip()
+            header_dict[k.lower()] = v.strip()
     return header_dict
 
 def Thread_RemoteRecv_Fun(conn,remoteSock,threadFlageKey): 
@@ -321,9 +321,9 @@ def Main_Thread_Fun(conn):
                    #"Sec-WebSocket-Protocol: chat\r\n" \
                    #"WebSocket-Location: ws://%s%s\r\n"
  
-    #response_str = response_tpl % (headers['Host'], headers['url'])
+    #response_str = response_tpl % (headers['host'], headers['url'])
     response_str = response_tpl
-    if '1' == headers['JustTest']:
+    if '1' == headers['justtest']:
         conn.send(bytes(response_str))
         conn.shutdown(socket.SHUT_RDWR)
         conn.close()
@@ -334,7 +334,7 @@ def Main_Thread_Fun(conn):
     print('send websocket Header\r\n')
     conn.send(bytes(response_str))
 
-    clientFlage = headers['ClientFlage']
+    clientFlage = headers['clientflage']
     SocketNODict = {}
     print('Create thread for Send msg to client\r\n')
     threading.Thread(target=Thread_SendMsgToClient_V2,args=(conn,SocketNODict)).start()
