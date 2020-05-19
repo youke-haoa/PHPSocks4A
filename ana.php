@@ -33,7 +33,7 @@ $urlHost = $urlArr['host'];
 function URLReq($str) {
 	$ch = curl_init();
 
-	curl_setopt($ch, CURLOPT_URL, $url);
+	curl_setopt($ch, CURLOPT_URL, $str);
 	curl_setopt($ch, CURLOPT_AUTOREFERER, true);
 	curl_setopt($ch, CURLOPT_MAXREDIRS, 3);//最多重定向次数
 
@@ -46,10 +46,10 @@ $rsp =URLReq($url);
 //取出所有剧集
 $vlink_1 = 'id="vlink_1"';
 $start2end = strstr($rsp,$vlink_1);
-if(! $str2end){
+if(! $start2end){
 	die("not find vlink_1");
 }
-$videoUl = strstr($start2end,'</ul>',true);
+$videoUlStr = strstr($start2end,'</ul>',true);
 
 $urlArry = array();
 while(true){
@@ -61,7 +61,7 @@ while(true){
 	$nexturl = str_replace("href='", "", $nexturl);
 	$nexturl = $urlHost.$nexturl;
 	array_push($urlArry,$nexturl);
-	$hrefStart = strstr($hrefStart,"' target=");
+	$videoUlStr = strstr($hrefStart,"target=");
 }
 if(0 == count($urlArry)){//没有剧集就返回
 	die("not find href");
@@ -95,7 +95,7 @@ foreach($videoBase64Url as $loop){//显示下载链接
 	echo '<a target="_blank" href="'.$domain.$loop.'">'.$videoUrl.'</a>';
 	echo '<br/>';
 }
-echo '<span>URL Text:</span><br/>';
+echo '<br/><span>URL Text:</span><br/>';
 
 foreach($videoUrls as $loop){//显示下载链接
 	echo '<br/>';
