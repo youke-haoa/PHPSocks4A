@@ -24,7 +24,7 @@ if(null != $ref){
 	curl_setopt($ch, CURLOPT_REFERER, $ref);
 }
 elseif(strpos(strtolower($url),'s1.xiahi.com') !== false){//特殊处理
-	curl_setopt($ch, CURLOPT_REFERER, "http://www.tadedy.net/js/player/mp4.html");
+	curl_setopt($ch, CURLOPT_REFERER, "http://www.tadedy.com/js/player/mp4.html");
 }
 
 $reqHeaders = apache_request_headers();//处理请求头中的内容
