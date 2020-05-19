@@ -1,10 +1,14 @@
 <?php
 
 $url = $_GET["url"];//目标url
+$useBase64=$_GET["base64"];//base64转换
 $ref = $_GET["ref"];//设置REFERER
 
 if(null == $url){
 	die("null url");
+}
+if('1'==$useBase64){
+	$url = base64_decode($url);
 }
 if(strpos(strtolower(parse_url($url,PHP_URL_HOST)),"openshift") !== false){//不能访问可能包含自身的网页
 	die("openshift is not safe");
@@ -20,7 +24,7 @@ if(null != $ref){
 	curl_setopt($ch, CURLOPT_REFERER, $ref);
 }
 elseif(strpos(strtolower($url),'s1.xiahi.com') !== false){//特殊处理
-	curl_setopt($ch, CURLOPT_REFERER, "http://www.wodedy.net/js/player/mp4.html");
+	curl_setopt($ch, CURLOPT_REFERER, "http://www.tadedy.net/js/player/mp4.html");
 }
 
 $reqHeaders = apache_request_headers();//处理请求头中的内容

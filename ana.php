@@ -1,5 +1,6 @@
 <html>
 <head>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0,maximum-scale=1.0, user-scalable=no"/>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <meta http-equiv="Content-Language" content="zh-CN" />
     <title>分析</title>
@@ -23,23 +24,59 @@
 if('POST' !== $_SERVER['REQUEST_METHOD']){
 	die();
 }
-$domain = "http://s4-ps.apps.us-west-1.starter.openshift-online.com/pp.php?url=";
+$domain = "http://s4-ps.apps.us-west-1.starter.openshift-online.com/pp.php?base64=1&url=";
 $url = $_POST["targetURL"];//目标url
 
-$ch = curl_init();
+$urlArr = parse_url($url);
+$urlHost = $urlArr['host'];
 
-curl_setopt($ch, CURLOPT_URL, $url);
-curl_setopt($ch, CURLOPT_AUTOREFERER, true);
-curl_setopt($ch, CURLOPT_MAXREDIRS, 3);//最多重定向次数
+function URLReq($str) {
+	$ch = curl_init();
 
-curl_setopt($ch, CURLOPT_RETURNTRANSFER , true);
-$rsp = curl_exec($ch);
+	curl_setopt($ch, CURLOPT_URL, $url);
+	curl_setopt($ch, CURLOPT_AUTOREFERER, true);
+	curl_setopt($ch, CURLOPT_MAXREDIRS, 3);//最多重定向次数
 
-//取出下载列表
-$str2end = strstr($rsp,'VideoInfoList=unescape("');
-if(! $str2end){
-	die("not find VideoInfoList");
+	curl_setopt($ch, CURLOPT_RETURNTRANSFER , true);
+	return curl_exec($ch);
 }
+
+$rsp =URLReq($url);
+
+//取出所有剧集
+$vlink_1 = 'id="vlink_1"';
+$start2end = strstr($rsp,$vlink_1);
+if(! $str2end){
+	die("not find vlink_1");
+}
+$videoUl = strstr($start2end,'</ul>',true);
+
+$urlArry = array();
+while(true){
+	$hrefStart = strstr($videoUlStr,"href='");
+	if(!$hrefStart){//没有找到剧集就返回
+		break;
+	}
+	$nexturl = strstr($hrefStart,"' target=",true);
+	$nexturl = str_replace("href='", "", $nexturl);
+	$nexturl = $urlHost.$nexturl;
+	array_push($urlArry,$nexturl);
+	$hrefStart = strstr($hrefStart,"' target=");
+}
+if(0 == count($urlArry)){//没有剧集就返回
+	die("not find href");
+}
+
+$videoBase64Url = array();
+foreach ($urlArry as $urlValue) {
+	$videoRsp = URLReq($urlValue);
+	$videoKey = 'now=base64decode("';
+	$videoStart = strstr($videoRsp,$videoKey);
+	$videoBase64 = strstr($videoStart,'");',true);
+	$videoBase64 = str_replace($videoKey, "", $videoBase64);
+	array_push($videoBase64Url,$videoBase64);
+}
+
 $unescapeStr = strstr($str2end,'")',true);
 $unescapeStr = str_replace('VideoInfoList=unescape("', "", $unescapeStr);
 
@@ -49,22 +86,24 @@ function escape($str) {
 function unescape($str) {
   return urldecode(json_decode('"'.str_replace('%u', '\\u', $str).'"'));
 }
-//下载列表转义
-$vList = unescape($unescapeStr);
 
-$vListArr = explode("$", $vList);
-$pathArr = array();
-
-foreach($vListArr as $loop){//挑选下载文件地址
-	if(strpos(strtolower($loop),"http") !== false){//设置下载文件名
-		$pathArr[]=$loop;
-	}
-}
-foreach($pathArr as $loop){//显示下载链接
+$videoUrls = array();
+foreach($videoBase64Url as $loop){//显示下载链接
+	$videoUrl = base64_decode($loop);
+	array_push($videoUrls,$videoUrl);
 	echo '<br/>';
-	echo '<a href="'.$domain.$loop.'">'.$loop.'</a>';
+	echo '<a target="_blank" href="'.$domain.$loop.'">'.$videoUrl.'</a>';
 	echo '<br/>';
 }
+echo '<span>URL Text:</span><br/>';
+
+foreach($videoUrls as $loop){//显示下载链接
+	echo '<br/>';
+	echo '<span>'.$loop.'</span>';
+	echo '<br/>';
+}
+
+echo '<br/>';
 
 ?>
 
