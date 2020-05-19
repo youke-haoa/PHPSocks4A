@@ -99,13 +99,31 @@ echo '<br/><span>URL Text:</span><br/>';
 
 foreach($videoUrls as $loop){//显示下载链接
 	echo '<br/>';
-	echo '<span>'.$loop.'</span>';
+	echo '<span id="text">'.$loop.'</span>';
 	echo '<br/>';
 }
 
 echo '<br/>';
 
 ?>
+
+<style type="text/css">
+   .wrapper {position: relative;}
+   #input {position: absolute;top: 0;left: 0;opacity: 0;z-index: -10;}
+</style>
+<div class="wrapper">
+<textarea id="input">这是幕后黑手</textarea>
+<button onclick="copyText()">copy</button>
+</div>
+<script type="text/javascript">
+	function copyText() {
+        var text = document.getElementById("text").innerHTML;
+        var input = document.getElementById("input");
+        input.value = text;
+        input.select();//选中文本
+        document.execCommand("copy");
+    }
+</script>
 
 </body>
 </html>
